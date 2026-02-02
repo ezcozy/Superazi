@@ -328,11 +328,17 @@
     border-bottom-color: var(--accent-red);
   }
 
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
   .positions-table {
     width:100%;
     font-size:0.7rem;
     overflow-x:auto;
-    display:block;
   }
   .positions-table table {
     width:100%;
@@ -345,11 +351,13 @@
     letter-spacing:1px; text-transform:uppercase;
     padding:7px 10px;
     border-bottom:1px solid var(--border);
+    font-size:0.65rem;
   }
   .positions-table td {
     padding:9px 10px;
     color: var(--text-secondary);
     border-bottom:1px solid var(--border);
+    font-size:0.7rem;
   }
   .positions-table .pnl {
     font-family:'Share Tech Mono',monospace;
@@ -357,6 +365,58 @@
   }
   .positions-table .pnl.pos { color: #fff; }
   .positions-table .pnl.neg { color: var(--accent-red); }
+  .positions-table .side-long {
+    color: #fff;
+    font-weight:600;
+  }
+  .positions-table .side-short {
+    color: var(--accent-red);
+    font-weight:600;
+  }
+  .positions-table .close-btn {
+    background: transparent;
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    padding: 4px 10px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  .positions-table .close-btn:hover {
+    background: var(--accent-red);
+    color: #fff;
+  }
+
+  /* Summary Grid */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 20px 0;
+  }
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .summary-label {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .summary-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .summary-value.positive { color: #fff; }
+  .summary-value.negative { color: var(--accent-red); }
 
   .empty-state {
     text-align:center;
@@ -519,19 +579,100 @@
   <!-- POSITIONS PANEL -->
   <div class="positions-panel">
     <div class="positions-tabs">
-      <button class="pos-tab active">Positions (0)</button>
-      <button class="pos-tab">Orders (0)</button>
-      <button class="pos-tab">History</button>
+      <button class="pos-tab active" data-tab="positions">Positions (<span id="posCount">0</span>)</button>
+      <button class="pos-tab" data-tab="history">History (<span id="histCount">0</span>)</button>
+      <button class="pos-tab" data-tab="summary">Summary</button>
     </div>
 
-    <div id="positionsContent">
-      <div class="empty-state">
+    <!-- POSITIONS TAB -->
+    <div class="tab-content active" id="positionsTab">
+      <div class="positions-table" id="positionsTable">
+        <table style="width:100%">
+          <thead>
+            <tr>
+              <th>Pair</th>
+              <th>Side</th>
+              <th>Size</th>
+              <th>Entry</th>
+              <th>Current</th>
+              <th>PnL</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="positionsBody">
+            <!-- Positions will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="positionsEmpty">
         <div class="icon">📊</div>
         <p>No open positions. Place your first trade to get started.</p>
       </div>
     </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-content" id="historyTab">
+      <div class="positions-table" id="historyTable">
+        <table style="width:100%">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Pair</th>
+              <th>Side</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>PnL</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody">
+            <!-- History will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="historyEmpty">
+        <div class="icon">📋</div>
+        <p>No closed trades yet.</p>
+      </div>
+    </div>
+
+    <!-- SUMMARY TAB -->
+    <div class="tab-content" id="summaryTab">
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="summary-label">Total Trades</div>
+          <div class="summary-value" id="totalTrades">0</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Win Rate</div>
+          <div class="summary-value" id="winRate">0%</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Total PnL</div>
+          <div class="summary-value pnl" id="totalPnl">+0.00</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Avg Win</div>
+          <div class="summary-value positive" id="avgWin">+0.00</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Avg Loss</div>
+          <div class="summary-value negative" id="avgLoss">-0.00</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Largest Win</div>
+          <div class="summary-value positive" id="largestWin">+0.00</div>
+        </div>
+      </div>
+    </div>
   </div>
 
+</div>
+
+<!-- FOOTER -->
+<div style="position:fixed;bottom:8px;right:16px;z-index:50;font-size:0.65rem;">
+  <a href="https://x.com/agentsuperazi" target="_blank" style="color:var(--text-dim);text-decoration:none;transition:color 0.3s;">
+    🐦 @agentsuperazi
+  </a>
 </div>
 
 <!-- SCRIPTS -->
@@ -829,50 +970,256 @@ function setupLeverageSlider() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PLACE ORDER
+// POSITIONS & HISTORY MANAGEMENT
 // ═══════════════════════════════════════════════════════════
+
+let openPositions = [];
+let closedPositions = [];
+let positionIdCounter = 1;
+
+// ─── POSITION TABS ───
+function setupPositionTabs() {
+  console.log('🔧 Setting up position tabs...');
+  const tabs = document.querySelectorAll('.pos-tab');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetTab = this.dataset.tab;
+      
+      // Remove active from all tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Hide all content
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      // Show selected content
+      if(targetTab === 'positions') {
+        document.getElementById('positionsTab').classList.add('active');
+      } else if(targetTab === 'history') {
+        document.getElementById('historyTab').classList.add('active');
+      } else if(targetTab === 'summary') {
+        document.getElementById('summaryTab').classList.add('active');
+        updateSummary();
+      }
+    });
+  });
+  
+  console.log('✅ Position tabs ready');
+}
+
+// ─── UPDATE POSITIONS DISPLAY ───
+function updatePositionsDisplay() {
+  const tbody = document.getElementById('positionsBody');
+  const empty = document.getElementById('positionsEmpty');
+  const table = document.getElementById('positionsTable');
+  
+  if(openPositions.length === 0) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+  } else {
+    table.style.display = 'block';
+    empty.style.display = 'none';
+    
+    tbody.innerHTML = openPositions.map(pos => {
+      const pnlClass = pos.pnl >= 0 ? 'pos' : 'neg';
+      const pnlSign = pos.pnl >= 0 ? '+' : '';
+      const sideClass = pos.side === 'long' ? 'side-long' : 'side-short';
+      
+      return `<tr>
+        <td>${pos.pair}</td>
+        <td class="${sideClass}">${pos.side.toUpperCase()}</td>
+        <td>${pos.size} USDT</td>
+        <td>${pos.entry.toFixed(2)}</td>
+        <td>${pos.current.toFixed(2)}</td>
+        <td class="pnl ${pnlClass}">${pnlSign}${pos.pnl.toFixed(2)}</td>
+        <td><button class="close-btn" onclick="closePosition(${pos.id})">Close</button></td>
+      </tr>`;
+    }).join('');
+  }
+  
+  // Update count
+  document.getElementById('posCount').textContent = openPositions.length;
+}
+
+// ─── UPDATE HISTORY DISPLAY ───
+function updateHistoryDisplay() {
+  const tbody = document.getElementById('historyBody');
+  const empty = document.getElementById('historyEmpty');
+  const table = document.getElementById('historyTable');
+  
+  if(closedPositions.length === 0) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+  } else {
+    table.style.display = 'block';
+    empty.style.display = 'none';
+    
+    tbody.innerHTML = closedPositions.map(pos => {
+      const pnlClass = pos.pnl >= 0 ? 'pos' : 'neg';
+      const pnlSign = pos.pnl >= 0 ? '+' : '';
+      const sideClass = pos.side === 'long' ? 'side-long' : 'side-short';
+      
+      return `<tr>
+        <td>${pos.closedAt}</td>
+        <td>${pos.pair}</td>
+        <td class="${sideClass}">${pos.side.toUpperCase()}</td>
+        <td>${pos.entry.toFixed(2)}</td>
+        <td>${pos.exit.toFixed(2)}</td>
+        <td class="pnl ${pnlClass}">${pnlSign}${pos.pnl.toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+  }
+  
+  // Update count
+  document.getElementById('histCount').textContent = closedPositions.length;
+}
+
+// ─── UPDATE SUMMARY ───
+function updateSummary() {
+  const totalTrades = closedPositions.length;
+  const wins = closedPositions.filter(p => p.pnl > 0);
+  const losses = closedPositions.filter(p => p.pnl < 0);
+  
+  const winRate = totalTrades > 0 ? ((wins.length / totalTrades) * 100).toFixed(1) : 0;
+  const totalPnl = closedPositions.reduce((sum, p) => sum + p.pnl, 0);
+  const avgWin = wins.length > 0 ? wins.reduce((sum, p) => sum + p.pnl, 0) / wins.length : 0;
+  const avgLoss = losses.length > 0 ? losses.reduce((sum, p) => sum + p.pnl, 0) / losses.length : 0;
+  const largestWin = wins.length > 0 ? Math.max(...wins.map(p => p.pnl)) : 0;
+  
+  document.getElementById('totalTrades').textContent = totalTrades;
+  document.getElementById('winRate').textContent = winRate + '%';
+  
+  const totalPnlEl = document.getElementById('totalPnl');
+  totalPnlEl.textContent = (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(2);
+  totalPnlEl.className = 'summary-value pnl ' + (totalPnl >= 0 ? 'pos' : 'neg');
+  
+  document.getElementById('avgWin').textContent = '+' + avgWin.toFixed(2);
+  document.getElementById('avgLoss').textContent = avgLoss.toFixed(2);
+  document.getElementById('largestWin').textContent = '+' + largestWin.toFixed(2);
+}
+
+// ─── CLOSE POSITION ───
+function closePosition(posId) {
+  const posIndex = openPositions.findIndex(p => p.id === posId);
+  if(posIndex === -1) return;
+  
+  const position = openPositions[posIndex];
+  
+  // Create closed position record
+  const closedPos = {
+    ...position,
+    exit: position.current,
+    closedAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  };
+  
+  closedPositions.unshift(closedPos); // Add to beginning
+  openPositions.splice(posIndex, 1); // Remove from open
+  
+  // Update displays
+  updatePositionsDisplay();
+  updateHistoryDisplay();
+  
+  // Update balance
+  const currentBalance = parseFloat(document.getElementById('balance').textContent);
+  const newBalance = currentBalance + position.pnl;
+  document.getElementById('balance').textContent = newBalance.toFixed(2);
+  
+  console.log('✅ Position closed:', closedPos);
+  
+  alert(`Position closed!\nPnL: ${position.pnl >= 0 ? '+' : ''}${position.pnl.toFixed(2)} USDT`);
+}
 
 function placeOrder() {
   console.log('📝 Place order clicked');
   
   if(!walletConnected) {
-    alert('⚠️ Please connect your wallet first');
-    console.log('❌ Wallet not connected');
-    return;
+    alert('⚠️ Connect wallet to place real orders. Demo mode: orders won\'t be saved.');
+    // Allow demo mode - don't return
   }
   
-  const leverage = document.getElementById('leverage').value;
-  const size = document.getElementById('size').value;
-  const entryPrice = document.getElementById('entryPrice').value || 'Market';
+  const leverage = parseInt(document.getElementById('leverage').value);
+  const size = parseFloat(document.getElementById('size').value);
+  const entryPriceInput = document.getElementById('entryPrice').value;
   
-  const orderData = {
-    wallet: walletAddress,
-    side: orderSide,
+  // Get current market price from chart
+  let entryPrice;
+  if(entryPriceInput && entryPriceInput !== '') {
+    entryPrice = parseFloat(entryPriceInput);
+  } else {
+    // Use last candle close price
+    const placeholder = document.getElementById('entryPrice').placeholder;
+    entryPrice = parseFloat(placeholder.split(': ')[1]);
+  }
+  
+  // Create position
+  const position = {
+    id: positionIdCounter++,
     pair: currentPair,
-    leverage: leverage + 'x',
-    size: size + ' USDT',
-    entry: entryPrice
+    side: orderSide,
+    size: size,
+    leverage: leverage,
+    entry: entryPrice,
+    current: entryPrice,
+    pnl: 0,
+    createdAt: new Date()
   };
   
-  console.log('📊 Order:', orderData);
-
-  // TODO: Send to backend API
-  // POST /api/orders/create
+  openPositions.push(position);
+  updatePositionsDisplay();
   
-  alert(`✅ ${orderSide.toUpperCase()} order placed!\n\nPair: ${currentPair}\nLeverage: ${leverage}x\nSize: ${size} USDT`);
+  console.log('📊 Position created:', position);
+  
+  // Show success message
+  alert(`✅ ${orderSide.toUpperCase()} position opened!\n\nPair: ${currentPair}\nLeverage: ${leverage}x\nSize: ${size} USDT\nEntry: ${entryPrice.toFixed(2)}`);
+  
+  // Switch to positions tab
+  document.querySelector('.pos-tab[data-tab="positions"]').click();
 }
 
+// ─── UPDATE POSITIONS PNL IN REAL-TIME ───
+function updatePositionsPnL() {
+  openPositions.forEach(pos => {
+    if(pos.pair !== currentPair) return; // Only update current pair
+    
+    // Get current price from entry field placeholder (updated by WebSocket)
+    const placeholder = document.getElementById('entryPrice').placeholder;
+    if(!placeholder.includes(':')) return;
+    
+    const currentPrice = parseFloat(placeholder.split(': ')[1]);
+    pos.current = currentPrice;
+    
+    // Calculate PnL
+    let pnlPercent;
+    if(pos.side === 'long') {
+      pnlPercent = ((currentPrice - pos.entry) / pos.entry) * 100;
+    } else {
+      pnlPercent = ((pos.entry - currentPrice) / pos.entry) * 100;
+    }
+    
+    pos.pnl = (pnlPercent / 100) * pos.size * pos.leverage;
+  });
+  
+  // Update display if on positions tab
+  if(document.getElementById('positionsTab') && document.getElementById('positionsTab').classList.contains('active')) {
+    updatePositionsDisplay();
+  }
+  
+  // Update total PnL in top bar
+  const totalOpenPnl = openPositions.reduce((sum, p) => sum + p.pnl, 0);
+  const pnlEl = document.getElementById('pnl');
+  pnlEl.textContent = (totalOpenPnl >= 0 ? '+' : '') + totalOpenPnl.toFixed(2);
+  pnlEl.className = 'value ' + (totalOpenPnl >= 0 ? 'positive' : 'negative');
+}
+
+
 // ═══════════════════════════════════════════════════════════
-// MOCK PNL UPDATES
+// MOCK DATA (REMOVED - Using real position tracking now)
 // ═══════════════════════════════════════════════════════════
 
 function startPnLUpdates() {
-  setInterval(() => {
-    const pnl = (Math.random() - 0.48) * 50;
-    const pnlEl = document.getElementById('pnl');
-    pnlEl.textContent = (pnl >= 0 ? '+' : '') + pnl.toFixed(2);
-    pnlEl.className = 'value ' + (pnl >= 0 ? 'positive' : 'negative');
-  }, 3000);
+  // Mock updates removed - using real position PnL calculation
+  console.log('ℹ️ Using real position PnL tracking');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -890,6 +1237,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     setupPairButtons();
     setupOrderTabs();
     setupLeverageSlider();
+    setupPositionTabs();
     
     // 2. Initialize chart
     initChart();
@@ -897,6 +1245,9 @@ window.addEventListener('DOMContentLoaded', async function() {
     
     // 3. Start mock updates
     startPnLUpdates();
+    
+    // 4. Start position PnL updates
+    setInterval(updatePositionsPnL, 1000); // Update every second
     
     // 4. Try auto-reconnect wallet
     if(window.solana && window.solana.isConnected) {
