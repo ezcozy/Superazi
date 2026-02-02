@@ -1313,12 +1313,70 @@ async function sendAIMessage() {
   sendBtn.textContent = 'Send';
 }
 
-// OpenAI API Integration for Chart Analysis
+// OpenAI API Integration for Chart Analysis with Real-Time Price Data
 async function getOpenAIResponse(question) {
-  // OpenAI API Key - Replace with your actual key
-  const OPENAI_API_KEY = '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';
+  // OpenAI API Key
+  const OPENAI_API_KEY = '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';
   
   console.log('🤖 Calling OpenAI API for chart analysis...');
+  
+  // Fetch real-time market data from Binance
+  let marketData = {};
+  try {
+    console.log('📊 Fetching live market data from Binance...');
+    
+    // Detect which pairs to fetch based on question
+    const lowerQ = question.toLowerCase();
+    let pairs = ['BTCUSDT'];
+    
+    if(lowerQ.includes('eth')) pairs.push('ETHUSDT');
+    if(lowerQ.includes('sol')) pairs.push('SOLUSDT');
+    if(lowerQ.includes('bnb')) pairs.push('BNBUSDT');
+    
+    // If no specific pair mentioned, fetch all major pairs
+    if(!lowerQ.includes('btc') && !lowerQ.includes('eth') && !lowerQ.includes('sol')) {
+      pairs = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
+    }
+    
+    // Fetch prices for all pairs
+    for(const symbol of pairs) {
+      try {
+        const priceRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+        const data = await priceRes.json();
+        
+        marketData[symbol] = {
+          price: parseFloat(data.lastPrice).toFixed(2),
+          change24h: parseFloat(data.priceChangePercent).toFixed(2),
+          high24h: parseFloat(data.highPrice).toFixed(2),
+          low24h: parseFloat(data.lowPrice).toFixed(2),
+          volume24h: parseFloat(data.volume).toFixed(0)
+        };
+        
+        console.log(`💰 ${symbol}: $${marketData[symbol].price} (${marketData[symbol].change24h}%)`);
+      } catch(e) {
+        console.error(`Failed to fetch ${symbol}:`, e);
+      }
+    }
+  } catch(error) {
+    console.error('❌ Failed to fetch market data:', error);
+    marketData['BTCUSDT'] = { price: 'N/A', change24h: 'N/A' };
+  }
+  
+  // Build market context for AI
+  let marketContext = `Current Live Market Data (${new Date().toLocaleString('en-US', {timeZone: 'UTC'})} UTC):
+`;
+  
+  for(const [symbol, data] of Object.entries(marketData)) {
+    const pair = symbol.replace('USDT', '');
+    marketContext += `
+${pair}/USDT:
+  • Price: $${data.price}
+  • 24h Change: ${data.change24h}%
+  • 24h High: $${data.high24h}
+  • 24h Low: $${data.low24h}
+  • 24h Volume: ${data.volume24h}
+`;
+  }
   
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1332,14 +1390,21 @@ async function getOpenAIResponse(question) {
         messages: [
           {
             role: 'system',
-            content: `You are SuperAzi AI, a professional crypto trading analyst. Provide concise, actionable trading insights for futures trading. Focus on:
-- Technical analysis (support/resistance, trends, patterns)
-- Risk management advice
-- Entry/exit strategies
-- Use emojis sparingly for emphasis
-- Keep responses under 200 words
-- Be confident but mention risks
-- Format with bullet points for clarity`
+            content: `You are SuperAzi AI, a professional crypto futures trading analyst.
+
+${marketContext}
+
+Your role:
+- Provide actionable technical analysis based on REAL-TIME market data above
+- Identify support/resistance levels based on current price action
+- Analyze trends, momentum, and volume
+- Suggest entry/exit strategies with specific price levels
+- Always include risk management (stop loss recommendations)
+- Keep responses concise and under 200 words
+- Use bullet points for clarity
+- Be confident but realistic about risks
+
+Remember: Users are trading futures with leverage, so risk management is critical!`
           },
           {
             role: 'user',
