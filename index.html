@@ -54,8 +54,11 @@
     cursor:pointer;
   }
   .nav-logo-img {
-    width:32px; height:32px; object-fit:contain;
-    filter: drop-shadow(0 0 6px var(--accent-red-dim));
+    width:32px; height:32px; 
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid var(--accent-red);
+    box-shadow: 0 0 8px var(--accent-red-dim);
   }
   .nav-logo-text {
     font-family:'Orbitron',sans-serif;
@@ -613,7 +616,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo" onclick="window.location.href='index.html'">
-    <div class="nav-logo-img" style="width:32px;height:32px;border-radius:50%;background:#e60026;display:flex;align-items:center;justify-content:center;font-size:0.7rem;">🦞</div>
+    <img class="nav-logo-img" src="logo.jpg" alt="SuperAzi" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />
     <span class="nav-logo-text">SUPERAZI</span>
   </div>
   <div class="nav-links">
@@ -715,7 +718,9 @@
     <div id="leaderboardRows">
       <!-- Empty state (will be hidden when data loads) -->
       <div class="lb-empty" id="emptyState">
-        <div class="lb-empty-icon">🦞</div>
+        <div class="lb-empty-icon">
+          <img src="logo.jpg" alt="SuperAzi" style="width:48px;height:48px;border-radius:50%;object-fit:cover;" />
+        </div>
         <h3>No Traders Yet</h3>
         <p>Be the first to enter the arena. The leaderboard populates live as players join and start trading.</p>
         <a href="trade.html" class="btn-primary">Try Demo First</a>
